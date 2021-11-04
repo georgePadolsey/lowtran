@@ -3,14 +3,19 @@
      & MODELPy,ITYPEPy,IEMSCTPy,IMpy,
      & ISEASNPy,MLpy,IRD1py,
      & ZMDLpy, Ppy, Tpy,WMOLpy,
-     & H1Py,H2Py,ANGLEPy,RangePy)
+     & H1Py,H2Py,ANGLEPy,RangePy,
+! following added by GP
+     & IHazePy, IVULCNPy, ICSTLPy, ICLDPy, IVSAPy, VISPy, WSSPy,
+     & RAINRTPy, GNDALTPy)
 
 ! note MLpy is implicit, don't pass it in from Numpy
       Logical,Intent(in) :: Python
       Integer,Intent(in) :: nwl,MODELPy,ITYPEPy,IEMSCTPy,IMpy
       Integer,Intent(in) :: ISEASNpy,MLpy,IRD1py
       real,intent(in) :: ZMDLpy(mlpy),Ppy(mlpy),Tpy(mlpy),WMOLpy(12)
-      Real, Intent(in)  :: V1Py,V2Py,DVPy,H1Py,H2Py,ANGLEPy,RangePy
+      Real, Intent(in)  :: V1Py,V2Py,DVPy,H1Py,H2Py,ANGLEPy,RangePy,
+     & IHazePy, IVULCNPy, ICSTLPy, ICLDPy, IVSAPy, VISPy, WSSPy,
+     & RAINRTPy, GNDALTPy
       Real, Intent(Out) :: TXPy(nwl,63), VPy(nwl), ALAMPy(nwl),
      & TRACEPy(nwl),UNIFPy(nwl), SUMAPy(nwl), IrradPy(nwl,3),
      & SumVVPy(nwl)
@@ -1044,8 +1049,9 @@ C
       If (Python) Then
       !FIXME make it read input parameter
         ISEASN=ISEASNPy
-        IHAZE=0;IVULCN=0; ICSTL=0; ICLD=0; IVSA=0; VIS=0.;
-        WSS=0.; WHH=0.; RAINRT=0.; GNDALT=0.
+        IHAZE=IHAZEPy;IVULCN=IVULCNPy; ICSTL=ICSTLPy;
+        ICLD=ICLDPy; IVSA=IVSAPy; VIS=VISPy; WSS=WSSPy;
+        WHH=WHHPy; RAINRT=RAINRTPy; GNDALT=GNDALTPy;
       Else
        READ(IRD,1200)IHAZE,ISEASN,IVULCN,ICSTL,ICLD,
      & IVSA,VIS,WSS,WHH,RAINRT,GNDALT
@@ -4585,7 +4591,7 @@ C
       ITER = ITER+1
       DC = BETAP - BETA1
 C     DERIV = -DC/BETD
-       ANGLE2 = ANGLE1+(ANGLE1-ANGLEP)*(BETA-BETA1)/(BETA1-BETAP)
+      ANGLE2 = ANGLE1+(ANGLE1-ANGLEP)*(BETA-BETA1)/(BETA1-BETAP)
       LEN = 0
       IF(ANGLE2.GT.90.0) LEN = 1
       ANGLS2 = ANGLE2
@@ -5277,7 +5283,11 @@ C*****LINEAR INTERPOLATION
       DBNDX1 = DBNDX3
       GO TO 115
   160 CONTINUE
-      SINAI = SINAI3
+      IF (SINAI3 .LE. 1) GO TO 420
+      print *,'WARNING: Possible loss of accuracy. Clamping SINAI3 -> 1';
+      SINAI3 = 1.0;
+      ! STOP "INVALID SINAI value, set to >1. Halting!";
+  420 SINAI = SINAI3
       COSAI = COSAI3
       SP(J) = S
       END SUBROUTINE LAYER

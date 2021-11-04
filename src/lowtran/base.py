@@ -2,7 +2,7 @@ from __future__ import annotations
 import logging
 import xarray
 import numpy as np
-from typing import Any
+from typing import Any, List, Dict
 
 try:
     import lowtran7  # don't use dot in front, it's linking to .pyd or .so
@@ -32,7 +32,7 @@ def nm2lt7(
     return short, long, N
 
 
-def loopuserdef(c1: dict[str, Any]) -> xarray.Dataset:
+def loopuserdef(c1: Dict[str, Any]) -> xarray.Dataset:
     """
     golowtran() is for scalar parameters only
     (besides vector of wavelength, which Lowtran internally loops over)
@@ -67,7 +67,7 @@ def loopuserdef(c1: dict[str, Any]) -> xarray.Dataset:
     return TR
 
 
-def loopangle(c1: dict[str, Any]) -> xarray.Dataset:
+def loopangle(c1: Dict[str, Any]) -> xarray.Dataset:
     """
     loop over "ANGLE"
     """
@@ -82,12 +82,13 @@ def loopangle(c1: dict[str, Any]) -> xarray.Dataset:
     return TR
 
 
-def golowtran(c1: dict[str, Any]) -> xarray.Dataset:
+def golowtran(c1: Dict[str, Any]) -> xarray.Dataset:
     """directly run Fortran code"""
     # %% default parameters
     c1.setdefault("time", None)
 
-    defp = ("h1", "h2", "angle", "im", "iseasn", "ird1", "range_km", "zmdl", "p", "t")
+    defp = ("h1", "h2", "angle", "im", "iseasn", "ird1", "range_km", "zmdl",
+            "p", "t", "ihaze", "ivulcn", "icstl", "icld", "ivsa", "vis", "wss", "rainrt", "gndalt")
     for p in defp:
         c1.setdefault(p, 0)
 
@@ -131,6 +132,16 @@ def golowtran(c1: dict[str, Any]) -> xarray.Dataset:
         c1["h2"],
         c1["angle"],
         c1["range_km"],
+        # added by GP
+        c1["ihaze"],
+        c1["ivulcn"],
+        c1["icstl"],
+        c1["icld"],
+        c1["ivsa"],
+        c1["vis"],
+        c1["wss"],
+        c1["rainrt"],
+        c1["gndalt"]
     )
 
     dims = ("time", "wavelength_nm", "angle_deg")
