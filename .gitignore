@@ -5,12 +5,11 @@
 .cache/
 *.nc
 *.h5
+CMakeFiles/
 
 data/
 dist/
 bin/
-
-archive/
 
 *.pyc
 __pycache__/*
